@@ -178,6 +178,6 @@ impl Scene {
 
         self.trace(ray)
             .map(|intersection| self.get_color(ray, &intersection, depth))
-            .unwrap_or(Color([0.1, 0.1, 0.7]))
+            .unwrap_or(Color([0.0; 3]))
     }
 }

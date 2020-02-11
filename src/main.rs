@@ -43,9 +43,14 @@ fn main() {
                 intensity: 5.0,
             }),
             Light::Spherical(SphericalLight {
-                position: Point3::new(0.5, 1.0, -2.0),
+                position: Point3::new(-2.5, 1.0, -2.0),
                 color: [1.0; 3].into(),
                 intensity: 120.0,
+            }),
+            Light::Spherical(SphericalLight {
+                position: Point3::new(5.0, 3.0, -6.0),
+                color: [1.0; 3].into(),
+                intensity: 200.0,
             }),
         ],
         objects: vec![
@@ -59,7 +64,7 @@ fn main() {
                 },
             }),
             Object::Sphere(Sphere {
-                position: Point3::new(-5.0, 0.0, -7.0),
+                position: Point3::new(4.0, 0.0, -5.0),
                 radius: 1.5,
                 material: Material {
                     color: Coloration::Color([1.0, 1.0, 1.0].into()),
@@ -97,6 +102,86 @@ fn main() {
                     ))),
                     albedo: 0.18,
                     surface: SurfaceType::Reflective { reflectivity: 0.1 },
+                },
+            }),
+            Object::Plane(Plane {
+                point: Point3::new(0.0, 5.0, 0.0),
+                normal: Vector3::y(),
+                material: Material {
+                    color: Coloration::Texture(DynamicImage::ImageRgb8(ImageBuffer::from_fn(
+                        10,
+                        10,
+                        |x, y| {
+                            let color = if x / 5 == y / 5 {
+                                [20, 20, 230]
+                            } else {
+                                [100; 3]
+                            };
+                            Rgb(color)
+                        },
+                    ))),
+                    albedo: 0.18,
+                    surface: SurfaceType::Diffuse,
+                },
+            }),
+            Object::Plane(Plane {
+                point: Point3::new(7.0, 0.0, 0.0),
+                normal: Vector3::x(),
+                material: Material {
+                    color: Coloration::Texture(DynamicImage::ImageRgb8(ImageBuffer::from_fn(
+                        10,
+                        10,
+                        |x, y| {
+                            let color = if x / 5 == y / 5 {
+                                [230, 230, 80]
+                            } else {
+                                [100; 3]
+                            };
+                            Rgb(color)
+                        },
+                    ))),
+                    albedo: 0.18,
+                    surface: SurfaceType::Diffuse,
+                },
+            }),
+            Object::Plane(Plane {
+                point: Point3::new(-7.0, 0.0, 0.0),
+                normal: -Vector3::x(),
+                material: Material {
+                    color: Coloration::Texture(DynamicImage::ImageRgb8(ImageBuffer::from_fn(
+                        10,
+                        10,
+                        |x, y| {
+                            let color = if x / 5 == y / 5 {
+                                [230, 230, 80]
+                            } else {
+                                [100; 3]
+                            };
+                            Rgb(color)
+                        },
+                    ))),
+                    albedo: 0.18,
+                    surface: SurfaceType::Diffuse,
+                },
+            }),
+            Object::Plane(Plane {
+                point: Point3::new(0.0, 0.0, -10.0),
+                normal: -Vector3::z(),
+                material: Material {
+                    color: Coloration::Texture(DynamicImage::ImageRgb8(ImageBuffer::from_fn(
+                        10,
+                        10,
+                        |x, y| {
+                            let color = if x / 5 == y / 5 {
+                                [230, 230, 80]
+                            } else {
+                                [100; 3]
+                            };
+                            Rgb(color)
+                        },
+                    ))),
+                    albedo: 0.18,
+                    surface: SurfaceType::Diffuse,
                 },
             }),
         ],
