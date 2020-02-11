@@ -5,7 +5,7 @@ mod ray;
 mod scene;
 
 use crate::light::{DirectionalLight, Light, SphericalLight};
-use crate::object::material::{Coloration, Material};
+use crate::object::material::{Coloration, Material, SurfaceType};
 use crate::object::plane::Plane;
 use crate::object::sphere::Sphere;
 use crate::object::Object;
@@ -35,6 +35,7 @@ fn main() {
         width: pixel_width,
         height: pixel_height,
         fov: 90.0,
+        max_recursion_depth: 5,
         lights: vec![
             Light::Directional(DirectionalLight {
                 direction: Vector3::new(1.0, -1.0, 0.0).normalize(),
@@ -42,9 +43,9 @@ fn main() {
                 intensity: 5.0,
             }),
             Light::Spherical(SphericalLight {
-                position: Point3::new(0.0, 2.0, -2.0),
+                position: Point3::new(0.5, 1.0, -2.0),
                 color: [1.0; 3].into(),
-                intensity: 80.0,
+                intensity: 120.0,
             }),
         ],
         objects: vec![
@@ -54,6 +55,7 @@ fn main() {
                 material: Material {
                     color: Coloration::Color([1.0, 0.0, 0.0].into()),
                     albedo: 0.18,
+                    surface: SurfaceType::Diffuse,
                 },
             }),
             Object::Sphere(Sphere {
@@ -62,14 +64,16 @@ fn main() {
                 material: Material {
                     color: Coloration::Color([0.0, 0.0, 1.0].into()),
                     albedo: 0.18,
+                    surface: SurfaceType::Diffuse,
                 },
             }),
             Object::Sphere(Sphere {
                 position: Point3::new(0.0, 0.0, -4.3),
                 radius: 0.5,
                 material: Material {
-                    color: Coloration::Color([0.0, 1.0, 0.0].into()),
+                    color: Coloration::Color([1.0, 1.0, 0.0].into()),
                     albedo: 0.18,
+                    surface: SurfaceType::Reflective { reflectivity: 0.1 },
                 },
             }),
             Object::Plane(Plane {
@@ -89,6 +93,7 @@ fn main() {
                         },
                     ))),
                     albedo: 0.18,
+                    surface: SurfaceType::Reflective { reflectivity: 0.1 },
                 },
             }),
         ],

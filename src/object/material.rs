@@ -5,6 +5,12 @@ use std::ops::{Add, Mul};
 pub struct Material {
     pub color: Coloration,
     pub albedo: f64,
+    pub surface: SurfaceType,
+}
+
+pub enum SurfaceType {
+    Diffuse,
+    Reflective { reflectivity: f64 },
 }
 
 #[derive(Clone, Copy)]

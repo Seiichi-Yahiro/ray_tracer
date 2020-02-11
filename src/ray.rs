@@ -29,4 +29,16 @@ impl Ray {
             direction: Vector3::new(sensor_x, sensor_y, -1.0).normalize(),
         }
     }
+
+    pub fn create_reflection(
+        normal: Vector3<f64>,
+        incident: Vector3<f64>,
+        intersection: Point3<f64>,
+        bias: f64,
+    ) -> Ray {
+        Ray {
+            origin: intersection + normal * bias,
+            direction: incident - 2.0 * incident.dot(&normal) * &normal,
+        }
+    }
 }
