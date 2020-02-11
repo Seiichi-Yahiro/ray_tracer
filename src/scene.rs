@@ -1,9 +1,9 @@
 use crate::intersection::{Intersectable, Intersection};
 use crate::light::Light;
+use crate::object::material::Color;
 use crate::object::Object;
 use crate::ray::Ray;
 use image::{ImageBuffer, RgbaImage};
-use itertools::Itertools;
 use rayon::prelude::*;
 use std::f64::consts::PI;
 
@@ -60,30 +60,13 @@ impl Scene {
                                         .material()
                                         .color
                                         .color_at(&intersection.object.texture_coords(&hit_point))
-                                        .iter()
-                                        .zip(light.color().iter())
-                                        .map(|(object_color_channel, light_color_channel)| {
-                                            *object_color_channel
-                                                * *light_color_channel
-                                                * light_power
-                                                * light_reflected
-                                        })
-                                        .collect_vec()
+                                        * light.color()
+                                        * light_power
+                                        * light_reflected
                                 })
-                                .fold(vec![0.0, 0.0, 0.0], |mut acc_color, color| {
-                                    acc_color.iter_mut().zip(color.iter()).for_each(
-                                        |(acc_color_channel, color_channel)| {
-                                            *acc_color_channel += *color_channel;
-                                        },
-                                    );
-                                    acc_color
-                                })
-                                .iter()
-                                .map(|color_channel| {
-                                    (*color_channel * 255.0).min(255.0).max(0.0) as u8
-                                })
-                                .pad_using(4, |_| 255)
-                                .collect_vec()
+                                .fold(Color([0.0, 0.0, 0.0]), |acc_color, color| acc_color + color)
+                                .to_u8()
+                                .to_vec()
                         } else {
                             vec![25, 25, 100, 255]
                         }

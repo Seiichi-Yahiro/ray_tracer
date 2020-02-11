@@ -1,15 +1,16 @@
+use crate::object::material::Color;
 use nalgebra::{Point3, Vector3};
 use std::f64::consts::PI;
 
 pub struct DirectionalLight {
     pub direction: Vector3<f64>,
-    pub color: [f64; 3],
+    pub color: Color,
     pub intensity: f64,
 }
 
 pub struct SphericalLight {
     pub position: Point3<f64>,
-    pub color: [f64; 3],
+    pub color: Color,
     pub intensity: f64,
 }
 
@@ -36,7 +37,7 @@ impl Light {
         }
     }
 
-    pub fn color(&self) -> [f64; 3] {
+    pub fn color(&self) -> Color {
         match self {
             Light::Directional(directional) => directional.color,
             Light::Spherical(spherical) => spherical.color,

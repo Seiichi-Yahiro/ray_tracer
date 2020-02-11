@@ -38,12 +38,12 @@ fn main() {
         lights: vec![
             Light::Directional(DirectionalLight {
                 direction: Vector3::new(1.0, -1.0, 0.0).normalize(),
-                color: [1.0; 3],
+                color: [1.0; 3].into(),
                 intensity: 5.0,
             }),
             Light::Spherical(SphericalLight {
                 position: Point3::new(0.0, 2.0, -2.0),
-                color: [1.0; 3],
+                color: [1.0; 3].into(),
                 intensity: 80.0,
             }),
         ],
@@ -52,7 +52,7 @@ fn main() {
                 position: Point3::new(-1.0, 1.5, -3.0),
                 radius: 1.0,
                 material: Material {
-                    color: Coloration::Color([1.0, 0.0, 0.0]),
+                    color: Coloration::Color([1.0, 0.0, 0.0].into()),
                     albedo: 0.18,
                 },
             }),
@@ -60,7 +60,7 @@ fn main() {
                 position: Point3::new(5.0, 0.0, -7.0),
                 radius: 1.5,
                 material: Material {
-                    color: Coloration::Color([0.0, 0.0, 1.0]),
+                    color: Coloration::Color([0.0, 0.0, 1.0].into()),
                     albedo: 0.18,
                 },
             }),
@@ -68,7 +68,7 @@ fn main() {
                 position: Point3::new(0.0, 0.0, -4.3),
                 radius: 0.5,
                 material: Material {
-                    color: Coloration::Color([0.0, 1.0, 0.0]),
+                    color: Coloration::Color([0.0, 1.0, 0.0].into()),
                     albedo: 0.18,
                 },
             }),
@@ -81,7 +81,7 @@ fn main() {
                         10,
                         |x, y| {
                             let color = if x / 5 == y / 5 {
-                                [180, 230, 80]
+                                [120, 230, 80]
                             } else {
                                 [100; 3]
                             };
