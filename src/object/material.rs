@@ -11,15 +11,23 @@ pub struct Material {
 pub enum SurfaceType {
     Diffuse,
     Reflective { reflectivity: f64 },
+    Refractive { index: f64, transparency: f64 },
 }
 
 #[derive(Clone, Copy)]
 pub struct Color(pub [f64; 3]);
 
+const GAMMA: f64 = 1.2;
+
 impl Color {
     pub fn to_u8(&self) -> [u8; 4] {
         let [r, g, b] = self.0;
-        [(r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8, 255]
+        [
+            (r.powf(1.0 / GAMMA) * 255.0) as u8,
+            (g.powf(1.0 / GAMMA) * 255.0) as u8,
+            (b.powf(1.0 / GAMMA) * 255.0) as u8,
+            255,
+        ]
     }
 }
 

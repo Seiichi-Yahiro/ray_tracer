@@ -59,12 +59,15 @@ fn main() {
                 },
             }),
             Object::Sphere(Sphere {
-                position: Point3::new(5.0, 0.0, -7.0),
+                position: Point3::new(-5.0, 0.0, -7.0),
                 radius: 1.5,
                 material: Material {
-                    color: Coloration::Color([0.0, 0.0, 1.0].into()),
+                    color: Coloration::Color([1.0, 1.0, 1.0].into()),
                     albedo: 0.18,
-                    surface: SurfaceType::Diffuse,
+                    surface: SurfaceType::Refractive {
+                        transparency: 0.4,
+                        index: 1.33,
+                    },
                 },
             }),
             Object::Sphere(Sphere {

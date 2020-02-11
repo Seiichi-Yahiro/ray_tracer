@@ -28,11 +28,15 @@ impl Intersectable for Sphere {
         let t1 = ray_with_length + thc;
 
         if t0 < 0.0 && t1 < 0.0 {
-            return None;
+            None
+        } else if t0 < 0.0 {
+            Some(t1)
+        } else if t1 < 0.0 {
+            Some(t0)
+        } else {
+            let distance = if t0 < t1 { t0 } else { t1 };
+            Some(distance)
         }
-
-        let distance = if t0 < t1 { t0 } else { t1 };
-        Some(distance)
     }
 
     fn surface_normal(&self, hit_point: &Point3<f64>) -> Vector3<f64> {
