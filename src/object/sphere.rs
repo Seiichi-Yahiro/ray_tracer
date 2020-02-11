@@ -1,11 +1,13 @@
-use crate::intersection::Intersectable;
+use crate::intersection::{Intersectable, TextureCoords};
+use crate::object::material::Material;
 use crate::ray::Ray;
 use nalgebra::{Point3, Vector3};
+use std::f64::consts::PI;
 
 pub struct Sphere {
     pub position: Point3<f64>,
     pub radius: f64,
-    pub color: [f64; 3],
+    pub material: Material,
 }
 
 impl Intersectable for Sphere {
@@ -37,7 +39,11 @@ impl Intersectable for Sphere {
         (*hit_point - self.position).normalize()
     }
 
-    fn albedo(&self) -> f64 {
-        0.18
+    fn texture_coords(&self, hit_point: &Point3<f64>) -> TextureCoords {
+        let hit_vec = hit_point - &self.position;
+        TextureCoords {
+            x: ((1.0 + hit_vec.z.atan2(hit_vec.x)) / PI) * 0.5,
+            y: (hit_vec.y / self.radius).acos() / PI,
+        }
     }
 }

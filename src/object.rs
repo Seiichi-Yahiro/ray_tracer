@@ -1,7 +1,9 @@
-use crate::intersection::Intersectable;
+use crate::intersection::{Intersectable, TextureCoords};
+use crate::object::material::Material;
 use crate::ray::Ray;
 use nalgebra::{Point3, Vector3};
 
+pub mod material;
 pub mod plane;
 pub mod sphere;
 
@@ -11,10 +13,10 @@ pub enum Object {
 }
 
 impl Object {
-    pub fn color(&self) -> [f64; 3] {
+    pub fn material(&self) -> &Material {
         match self {
-            Object::Sphere(sphere) => sphere.color,
-            Object::Plane(plane) => plane.color,
+            Object::Sphere(sphere) => &sphere.material,
+            Object::Plane(plane) => &plane.material,
         }
     }
 }
@@ -34,10 +36,10 @@ impl Intersectable for Object {
         }
     }
 
-    fn albedo(&self) -> f64 {
+    fn texture_coords(&self, hit_point: &Point3<f64>) -> TextureCoords {
         match self {
-            Object::Sphere(sphere) => sphere.albedo(),
-            Object::Plane(plane) => plane.albedo(),
+            Object::Sphere(sphere) => sphere.texture_coords(hit_point),
+            Object::Plane(plane) => plane.texture_coords(hit_point),
         }
     }
 }

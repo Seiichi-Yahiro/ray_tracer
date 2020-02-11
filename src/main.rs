@@ -5,11 +5,13 @@ mod ray;
 mod scene;
 
 use crate::light::{DirectionalLight, Light, SphericalLight};
+use crate::object::material::{Coloration, Material};
 use crate::object::plane::Plane;
 use crate::object::sphere::Sphere;
 use crate::object::Object;
 use crate::scene::Scene;
 use glutin_window::GlutinWindow as Window;
+use image::{DynamicImage, ImageBuffer, Rgb};
 use nalgebra::{Point3, Vector3};
 use opengl_graphics::{GlGraphics, OpenGL, Texture, TextureSettings};
 use piston::event_loop::{EventLoop, EventSettings, Events};
@@ -49,22 +51,45 @@ fn main() {
             Object::Sphere(Sphere {
                 position: Point3::new(-1.0, 1.5, -3.0),
                 radius: 1.0,
-                color: [1.0, 0.0, 0.0],
+                material: Material {
+                    color: Coloration::Color([1.0, 0.0, 0.0]),
+                    albedo: 0.18,
+                },
             }),
             Object::Sphere(Sphere {
                 position: Point3::new(5.0, 0.0, -7.0),
                 radius: 1.5,
-                color: [0.0, 0.0, 1.0],
+                material: Material {
+                    color: Coloration::Color([0.0, 0.0, 1.0]),
+                    albedo: 0.18,
+                },
             }),
             Object::Sphere(Sphere {
                 position: Point3::new(0.0, 0.0, -4.3),
                 radius: 0.5,
-                color: [0.0, 1.0, 0.0],
+                material: Material {
+                    color: Coloration::Color([0.0, 1.0, 0.0]),
+                    albedo: 0.18,
+                },
             }),
             Object::Plane(Plane {
                 point: Point3::new(0.0, -1.5, 0.0),
                 normal: -Vector3::y(),
-                color: [0.5, 1.0, 0.5],
+                material: Material {
+                    color: Coloration::Texture(DynamicImage::ImageRgb8(ImageBuffer::from_fn(
+                        10,
+                        10,
+                        |x, y| {
+                            let color = if x / 5 == y / 5 {
+                                [180, 230, 80]
+                            } else {
+                                [100; 3]
+                            };
+                            Rgb(color)
+                        },
+                    ))),
+                    albedo: 0.18,
+                },
             }),
         ],
     };

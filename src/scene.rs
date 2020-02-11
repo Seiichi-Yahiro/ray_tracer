@@ -52,11 +52,14 @@ impl Scene {
                                     let light_power =
                                         surface_normal.dot(&direction_to_light).max(0.0)
                                             * light_intensity;
-                                    let light_reflected = intersection.object.albedo() / PI;
+                                    let light_reflected =
+                                        intersection.object.material().albedo / PI;
 
                                     intersection
                                         .object
-                                        .color()
+                                        .material()
+                                        .color
+                                        .color_at(&intersection.object.texture_coords(&hit_point))
                                         .iter()
                                         .zip(light.color().iter())
                                         .map(|(object_color_channel, light_color_channel)| {

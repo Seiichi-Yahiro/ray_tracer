@@ -16,5 +16,10 @@ impl<'a> Intersection<'a> {
 pub trait Intersectable {
     fn intersect(&self, ray: &Ray) -> Option<f64>;
     fn surface_normal(&self, hit_point: &Point3<f64>) -> Vector3<f64>;
-    fn albedo(&self) -> f64;
+    fn texture_coords(&self, hit_point: &Point3<f64>) -> TextureCoords;
+}
+
+pub struct TextureCoords {
+    pub x: f64,
+    pub y: f64,
 }

@@ -1,11 +1,12 @@
-use crate::intersection::Intersectable;
+use crate::intersection::{Intersectable, TextureCoords};
+use crate::object::material::Material;
 use crate::ray::Ray;
 use nalgebra::{Point3, Vector3};
 
 pub struct Plane {
     pub point: Point3<f64>,
     pub normal: Vector3<f64>,
-    pub color: [f64; 3],
+    pub material: Material,
 }
 
 impl Intersectable for Plane {
@@ -26,7 +27,20 @@ impl Intersectable for Plane {
         -self.normal.clone()
     }
 
-    fn albedo(&self) -> f64 {
-        0.18
+    fn texture_coords(&self, hit_point: &Point3<f64>) -> TextureCoords {
+        let mut x_axis = self.normal.cross(&Vector3::new(0.0, 0.0, 1.0));
+
+        if x_axis.norm() == 0.0 {
+            x_axis = self.normal.cross(&Vector3::new(0.0, 1.0, 0.0));
+        }
+
+        let y_axis = self.normal.cross(&x_axis);
+
+        let hit_vec = hit_point - &self.point;
+
+        TextureCoords {
+            x: hit_vec.dot(&x_axis),
+            y: hit_vec.dot(&y_axis),
+        }
     }
 }
