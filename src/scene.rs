@@ -82,8 +82,7 @@ impl Scene {
                     ray::create_reflection(intersection.normal, ray.dir, hit_point, SHADOW_BIAS);
                 let reflection_color = self.cast_ray(&reflection_ray, depth - 1);
 
-                let color = reflection_color * kr + refraction_color * (1.0 - kr);
-                color * transparency * surface_color
+                (reflection_color * kr + refraction_color * (1.0 - kr) * transparency) * surface_color
             }
         }
     }
