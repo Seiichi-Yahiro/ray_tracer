@@ -9,9 +9,9 @@ impl Color {
     pub fn to_u8(&self) -> [u8; 4] {
         let [r, g, b] = self.0;
         [
-            (r.powf(1.0 / GAMMA) * 255.0) as u8,
-            (g.powf(1.0 / GAMMA) * 255.0) as u8,
-            (b.powf(1.0 / GAMMA) * 255.0) as u8,
+            (r.powf(1.0 / GAMMA).clamp(0.0, 1.0) * 255.0) as u8,
+            (g.powf(1.0 / GAMMA).clamp(0.0, 1.0) * 255.0) as u8,
+            (b.powf(1.0 / GAMMA).clamp(0.0, 1.0) * 255.0) as u8,
             255,
         ]
     }
