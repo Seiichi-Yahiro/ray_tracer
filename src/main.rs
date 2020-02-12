@@ -22,7 +22,7 @@ fn main() {
     let opengl = OpenGL::V4_5;
     let (pixel_width, pixel_height) = (800, 600);
 
-    let mut window: Window = WindowSettings::new("Ray tracing", [pixel_width, pixel_height])
+    let mut window: Window = WindowSettings::new("Ray Tracer", [pixel_width, pixel_height])
         .graphics_api(opengl)
         .exit_on_esc(true)
         .build()
@@ -71,7 +71,7 @@ fn main() {
                     albedo: 0.18,
                     surface: SurfaceType::Refractive {
                         transparency: 0.4,
-                        index: 1.33,
+                        index: 2.0,
                     },
                 },
             }),
@@ -81,7 +81,7 @@ fn main() {
                 material: Material {
                     color: Coloration::Color([1.0, 1.0, 0.0].into()),
                     albedo: 0.18,
-                    surface: SurfaceType::Reflective { reflectivity: 0.1 },
+                    surface: SurfaceType::Reflective { reflectivity: 0.4 },
                 },
             }),
             Object::Plane(Plane {
@@ -133,7 +133,7 @@ fn main() {
                         10,
                         |x, y| {
                             let color = if x / 5 == y / 5 {
-                                [230, 230, 80]
+                                [230, 150, 80]
                             } else {
                                 [100; 3]
                             };
@@ -153,7 +153,7 @@ fn main() {
                         10,
                         |x, y| {
                             let color = if x / 5 == y / 5 {
-                                [230, 230, 80]
+                                [230, 150, 80]
                             } else {
                                 [100; 3]
                             };
