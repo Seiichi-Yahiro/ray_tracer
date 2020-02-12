@@ -47,87 +47,79 @@ impl Scene {
     ) -> Color {
         let hit_point = ray.point_at(intersection.toi);
 
-        self.lights
-            .iter()
-            .map(|light| match object.material.surface {
-                SurfaceType::Diffuse => {
-                    self.shade_diffuse(object, light, &hit_point, &intersection.normal)
-                }
-                SurfaceType::Reflective { reflectivity } => {
-                    let reflection_ray = ray::create_reflection(
+        match object.material.surface {
+            SurfaceType::Diffuse => self.shade_diffuse(object, &hit_point, &intersection.normal),
+            SurfaceType::Reflective { reflectivity } => {
+                let reflection_ray =
+                    ray::create_reflection(intersection.normal, ray.dir, hit_point, SHADOW_BIAS);
+                let mut color = self.shade_diffuse(object, &hit_point, &intersection.normal);
+                color = color * (1.0 - reflectivity);
+                color + self.cast_ray(&reflection_ray, depth - 1) * reflectivity
+            }
+            SurfaceType::Refractive {
+                transparency,
+                index,
+            } => {
+                let mut refraction_color = Color([0.0; 3]);
+                let kr = Self::fresnel(ray.dir, intersection.normal, index);
+                let surface_color = object.material.color;
+                //.color_at(&intersection.object.texture_coords(&hit_point));
+
+                if kr < 1.0 {
+                    let transmission_ray = ray::create_transmission(
                         intersection.normal,
                         ray.dir,
                         hit_point,
                         SHADOW_BIAS,
-                    );
-                    let mut color =
-                        self.shade_diffuse(object, light, &hit_point, &intersection.normal);
-                    color = color * (1.0 - reflectivity);
-                    color + self.cast_ray(&reflection_ray, depth - 1) * reflectivity
+                        index,
+                    )
+                    .unwrap();
+
+                    refraction_color = self.cast_ray(&transmission_ray, depth - 1);
                 }
-                SurfaceType::Refractive {
-                    transparency,
-                    index,
-                } => {
-                    let mut refraction_color = Color([0.0; 3]);
-                    let kr = Self::fresnel(ray.dir, intersection.normal, index);
-                    let surface_color = object.material.color;
-                    //.color_at(&intersection.object.texture_coords(&hit_point));
 
-                    if kr < 1.0 {
-                        let transmission_ray = ray::create_transmission(
-                            intersection.normal,
-                            ray.dir,
-                            hit_point,
-                            SHADOW_BIAS,
-                            index,
-                        )
-                        .unwrap();
+                let reflection_ray =
+                    ray::create_reflection(intersection.normal, ray.dir, hit_point, SHADOW_BIAS);
+                let reflection_color = self.cast_ray(&reflection_ray, depth - 1);
 
-                        refraction_color = self.cast_ray(&transmission_ray, depth - 1);
-                    }
-
-                    let reflection_ray = ray::create_reflection(
-                        intersection.normal,
-                        ray.dir,
-                        hit_point,
-                        SHADOW_BIAS,
-                    );
-                    let reflection_color = self.cast_ray(&reflection_ray, depth - 1);
-
-                    let color = reflection_color * kr + refraction_color * (1.0 - kr);
-                    color * transparency * surface_color
-                }
-            })
-            .fold(Color([0.0, 0.0, 0.0]), |acc_color, color| acc_color + color)
+                let color = reflection_color * kr + refraction_color * (1.0 - kr);
+                color * transparency * surface_color
+            }
+        }
     }
 
     fn shade_diffuse(
         &self,
         object: &Object,
-        light: &Light,
         hit_point: &Point3<f64>,
         surface_normal: &Vector3<f64>,
     ) -> Color {
-        let direction_to_light = light.direction_to_light(&hit_point);
-        let shadow_ray = Ray::new(hit_point + surface_normal * SHADOW_BIAS, direction_to_light);
+        self.lights
+            .iter()
+            .map(|light| {
+                let direction_to_light = light.direction_to_light(&hit_point);
+                let shadow_ray =
+                    Ray::new(hit_point + surface_normal * SHADOW_BIAS, direction_to_light);
 
-        let light_intensity = self
-            .trace(&shadow_ray)
-            .map(|(_, intersection)| intersection.toi > light.distance_to(&hit_point)) // is hitted object behind light
-            .unwrap_or(true)
-            .then(|| light.intensity(&hit_point))
-            .unwrap_or(0.0);
+                let light_intensity = self
+                    .trace(&shadow_ray)
+                    .map(|(_, intersection)| intersection.toi > light.distance_to(&hit_point)) // is hitted object behind light
+                    .unwrap_or(true)
+                    .then(|| light.intensity(&hit_point))
+                    .unwrap_or(0.0);
 
-        let light_power = surface_normal.dot(&direction_to_light).max(0.0) * light_intensity;
-        let light_reflected = object.material.albedo / PI;
+                let light_power =
+                    surface_normal.dot(&direction_to_light).max(0.0) * light_intensity;
+                let light_reflected = object.material.albedo / PI;
 
-        object
-            .material.color
-            //.color_at(&intersection.object.texture_coords(&hit_point))
-            * light.color()
-        * light_power
-        * light_reflected
+                object
+                    .material.color
+                    //.color_at(&intersection.object.texture_coords(&hit_point))
+                    * light.color()
+                    * light_power
+                    * light_reflected
+            })
+            .fold(Color([0.0, 0.0, 0.0]), |acc_color, color| acc_color + color)
     }
 
     fn fresnel(incident: Vector3<f64>, normal: Vector3<f64>, index: f64) -> f64 {

@@ -46,7 +46,7 @@ impl Light {
 
     pub fn distance_to(&self, point: &Point3<f64>) -> f64 {
         match self {
-            Light::Directional(_) => 1.7976931348623157e+308_f64,
+            Light::Directional(_) => f64::INFINITY,
             Light::Spherical(spherical) => (spherical.position - point).norm(),
         }
     }

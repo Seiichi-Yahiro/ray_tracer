@@ -1,5 +1,6 @@
 #![feature(bool_to_option)]
 #![feature(clamp)]
+#![feature(assoc_int_consts)]
 
 mod color;
 mod light;
