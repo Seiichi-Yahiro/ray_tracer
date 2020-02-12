@@ -1,4 +1,4 @@
-use crate::object::material::Color;
+use crate::color::Color;
 use nalgebra::{Point3, Vector3};
 use std::f64::consts::PI;
 

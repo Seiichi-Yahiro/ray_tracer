@@ -1,18 +1,20 @@
-mod intersection;
+#![feature(bool_to_option)]
+
+mod color;
 mod light;
+mod material;
 mod object;
 mod ray;
 mod scene;
 
 use crate::light::{DirectionalLight, Light, SphericalLight};
-use crate::object::material::{Coloration, Material, SurfaceType};
-use crate::object::plane::Plane;
-use crate::object::sphere::Sphere;
+use crate::material::{Material, SurfaceType};
 use crate::object::Object;
 use crate::scene::Scene;
 use glutin_window::GlutinWindow as Window;
 use image::{DynamicImage, ImageBuffer, Rgb};
-use nalgebra::{Perspective3, Point3, Vector3};
+use nalgebra::{Isometry3, Perspective3, Point3, Translation3, Unit, UnitQuaternion, Vector3};
+use ncollide3d::shape;
 use opengl_graphics::{GlGraphics, OpenGL, Texture, TextureSettings};
 use piston::event_loop::{EventLoop, EventSettings, Events};
 use piston::input::RenderEvent;
@@ -59,137 +61,189 @@ fn main() {
             }),
         ],
         objects: vec![
-            Object::Sphere(Sphere {
-                position: Point3::new(-1.0, 1.5, -3.0),
-                radius: 1.0,
-                material: Material {
-                    color: Coloration::Color([1.0, 0.0, 0.0].into()),
+            Object::new(
+                Isometry3::from_parts(
+                    Translation3::new(-1.0, 1.5, -3.0),
+                    UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.0),
+                ),
+                shape::Ball::new(1.0),
+                Material {
+                    color: [1.0, 0.0, 0.0].into(),
                     albedo: 0.18,
                     surface: SurfaceType::Diffuse,
                 },
-            }),
-            Object::Sphere(Sphere {
-                position: Point3::new(4.0, 0.0, -5.0),
-                radius: 1.5,
-                material: Material {
-                    color: Coloration::Color([1.0, 1.0, 1.0].into()),
+            ),
+            Object::new(
+                Isometry3::from_parts(
+                    Translation3::new(4.0, 0.0, -5.0),
+                    UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.0),
+                ),
+                shape::Ball::new(1.5),
+                Material {
+                    color: [1.0, 1.0, 1.0].into(),
                     albedo: 0.18,
                     surface: SurfaceType::Refractive {
                         transparency: 0.4,
                         index: 2.0,
                     },
                 },
-            }),
-            Object::Sphere(Sphere {
-                position: Point3::new(0.0, 0.0, -4.3),
-                radius: 0.5,
-                material: Material {
-                    color: Coloration::Color([1.0, 1.0, 0.0].into()),
+            ),
+            Object::new(
+                Isometry3::from_parts(
+                    Translation3::new(0.0, 0.0, -4.3),
+                    UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.0),
+                ),
+                shape::Ball::new(0.5),
+                Material {
+                    color: [1.0, 1.0, 0.0].into(),
                     albedo: 0.18,
                     surface: SurfaceType::Reflective { reflectivity: 0.4 },
                 },
-            }),
-            Object::Plane(Plane {
-                point: Point3::new(0.0, -1.5, 0.0),
-                normal: -Vector3::y(),
-                material: Material {
-                    color: Coloration::Texture(DynamicImage::ImageRgb8(ImageBuffer::from_fn(
-                        10,
-                        10,
-                        |x, y| {
-                            let color = if x / 5 == y / 5 {
-                                [120, 230, 80]
-                            } else {
-                                [100; 3]
-                            };
-                            Rgb(color)
-                        },
-                    ))),
+            ),
+            Object::new(
+                Isometry3::from_parts(
+                    Translation3::new(0.0, -1.5, 0.0),
+                    UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.0),
+                ),
+                shape::Plane::new(Unit::new_normalize(-Vector3::y())),
+                Material {
+                    color: [0.0, 1.0, 0.0].into(),
                     albedo: 0.18,
                     surface: SurfaceType::Reflective { reflectivity: 0.1 },
                 },
-            }),
-            Object::Plane(Plane {
-                point: Point3::new(0.0, 5.0, 0.0),
-                normal: Vector3::y(),
-                material: Material {
-                    color: Coloration::Texture(DynamicImage::ImageRgb8(ImageBuffer::from_fn(
-                        10,
-                        10,
-                        |x, y| {
-                            let color = if x / 5 == y / 5 {
-                                [20, 20, 230]
-                            } else {
-                                [100; 3]
-                            };
-                            Rgb(color)
-                        },
-                    ))),
-                    albedo: 0.18,
-                    surface: SurfaceType::Diffuse,
-                },
-            }),
-            Object::Plane(Plane {
-                point: Point3::new(7.0, 0.0, 0.0),
-                normal: Vector3::x(),
-                material: Material {
-                    color: Coloration::Texture(DynamicImage::ImageRgb8(ImageBuffer::from_fn(
-                        10,
-                        10,
-                        |x, y| {
-                            let color = if x / 5 == y / 5 {
-                                [230, 150, 80]
-                            } else {
-                                [100; 3]
-                            };
-                            Rgb(color)
-                        },
-                    ))),
-                    albedo: 0.18,
-                    surface: SurfaceType::Diffuse,
-                },
-            }),
-            Object::Plane(Plane {
-                point: Point3::new(-7.0, 0.0, 0.0),
-                normal: -Vector3::x(),
-                material: Material {
-                    color: Coloration::Texture(DynamicImage::ImageRgb8(ImageBuffer::from_fn(
-                        10,
-                        10,
-                        |x, y| {
-                            let color = if x / 5 == y / 5 {
-                                [230, 150, 80]
-                            } else {
-                                [100; 3]
-                            };
-                            Rgb(color)
-                        },
-                    ))),
-                    albedo: 0.18,
-                    surface: SurfaceType::Diffuse,
-                },
-            }),
-            Object::Plane(Plane {
-                point: Point3::new(0.0, 0.0, -10.0),
-                normal: -Vector3::z(),
-                material: Material {
-                    color: Coloration::Texture(DynamicImage::ImageRgb8(ImageBuffer::from_fn(
-                        10,
-                        10,
-                        |x, y| {
-                            let color = if x / 5 == y / 5 {
-                                [230, 230, 80]
-                            } else {
-                                [100; 3]
-                            };
-                            Rgb(color)
-                        },
-                    ))),
-                    albedo: 0.18,
-                    surface: SurfaceType::Diffuse,
-                },
-            }),
-        ],
+            ),
+        ], /*objects: vec![
+               Object::Sphere(Sphere {
+                   position: Point3::new(-1.0, 1.5, -3.0),
+                   radius: 1.0,
+                   material: Material {
+                       color: Coloration::Color([1.0, 0.0, 0.0].into()),
+                       albedo: 0.18,
+                       surface: SurfaceType::Diffuse,
+                   },
+               }),
+               Object::Sphere(Sphere {
+                   position: Point3::new(4.0, 0.0, -5.0),
+                   radius: 1.5,
+                   material: Material {
+                       color: Coloration::Color([1.0, 1.0, 1.0].into()),
+                       albedo: 0.18,
+                       surface: SurfaceType::Refractive {
+                           transparency: 0.4,
+                           index: 2.0,
+                       },
+                   },
+               }),
+               Object::Sphere(Sphere {
+                   position: Point3::new(0.0, 0.0, -4.3),
+                   radius: 0.5,
+                   material: Material {
+                       color: Coloration::Color([1.0, 1.0, 0.0].into()),
+                       albedo: 0.18,
+                       surface: SurfaceType::Reflective { reflectivity: 0.4 },
+                   },
+               }),
+               Object::Plane(Plane {
+                   point: Point3::new(0.0, -1.5, 0.0),
+                   normal: -Vector3::y(),
+                   material: Material {
+                       color: Coloration::Texture(DynamicImage::ImageRgb8(ImageBuffer::from_fn(
+                           10,
+                           10,
+                           |x, y| {
+                               let color = if x / 5 == y / 5 {
+                                   [120, 230, 80]
+                               } else {
+                                   [100; 3]
+                               };
+                               Rgb(color)
+                           },
+                       ))),
+                       albedo: 0.18,
+                       surface: SurfaceType::Reflective { reflectivity: 0.1 },
+                   },
+               }),
+               Object::Plane(Plane {
+                   point: Point3::new(0.0, 5.0, 0.0),
+                   normal: Vector3::y(),
+                   material: Material {
+                       color: Coloration::Texture(DynamicImage::ImageRgb8(ImageBuffer::from_fn(
+                           10,
+                           10,
+                           |x, y| {
+                               let color = if x / 5 == y / 5 {
+                                   [20, 20, 230]
+                               } else {
+                                   [100; 3]
+                               };
+                               Rgb(color)
+                           },
+                       ))),
+                       albedo: 0.18,
+                       surface: SurfaceType::Diffuse,
+                   },
+               }),
+               Object::Plane(Plane {
+                   point: Point3::new(7.0, 0.0, 0.0),
+                   normal: Vector3::x(),
+                   material: Material {
+                       color: Coloration::Texture(DynamicImage::ImageRgb8(ImageBuffer::from_fn(
+                           10,
+                           10,
+                           |x, y| {
+                               let color = if x / 5 == y / 5 {
+                                   [230, 150, 80]
+                               } else {
+                                   [100; 3]
+                               };
+                               Rgb(color)
+                           },
+                       ))),
+                       albedo: 0.18,
+                       surface: SurfaceType::Diffuse,
+                   },
+               }),
+               Object::Plane(Plane {
+                   point: Point3::new(-7.0, 0.0, 0.0),
+                   normal: -Vector3::x(),
+                   material: Material {
+                       color: Coloration::Texture(DynamicImage::ImageRgb8(ImageBuffer::from_fn(
+                           10,
+                           10,
+                           |x, y| {
+                               let color = if x / 5 == y / 5 {
+                                   [230, 150, 80]
+                               } else {
+                                   [100; 3]
+                               };
+                               Rgb(color)
+                           },
+                       ))),
+                       albedo: 0.18,
+                       surface: SurfaceType::Diffuse,
+                   },
+               }),
+               Object::Plane(Plane {
+                   point: Point3::new(0.0, 0.0, -10.0),
+                   normal: -Vector3::z(),
+                   material: Material {
+                       color: Coloration::Texture(DynamicImage::ImageRgb8(ImageBuffer::from_fn(
+                           10,
+                           10,
+                           |x, y| {
+                               let color = if x / 5 == y / 5 {
+                                   [230, 230, 80]
+                               } else {
+                                   [100; 3]
+                               };
+                               Rgb(color)
+                           },
+                       ))),
+                       albedo: 0.18,
+                       surface: SurfaceType::Diffuse,
+                   },
+               }),
+           ],*/
     };
 
     let texture_settings = TextureSettings::new();

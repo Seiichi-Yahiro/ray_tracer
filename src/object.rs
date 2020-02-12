@@ -1,45 +1,25 @@
-use crate::intersection::{Intersectable, TextureCoords};
-use crate::object::material::Material;
-use crate::ray::Ray;
-use nalgebra::{Point3, Vector3};
+use crate::material::Material;
+use nalgebra::Isometry3;
+use ncollide3d::query::{Ray, RayCast, RayIntersection};
+use ncollide3d::shape::Shape;
 
-pub mod material;
-pub mod plane;
-pub mod sphere;
-
-pub enum Object {
-    Sphere(sphere::Sphere),
-    Plane(plane::Plane),
+pub struct Object {
+    pub isometry: Isometry3<f64>,
+    pub shape: Box<dyn Shape<f64>>,
+    pub material: Material,
 }
 
 impl Object {
-    pub fn material(&self) -> &Material {
-        match self {
-            Object::Sphere(sphere) => &sphere.material,
-            Object::Plane(plane) => &plane.material,
-        }
-    }
-}
-
-impl Intersectable for Object {
-    fn intersect(&self, ray: &Ray) -> Option<f64> {
-        match self {
-            Object::Sphere(sphere) => sphere.intersect(ray),
-            Object::Plane(plane) => plane.intersect(ray),
+    pub fn new(isometry: Isometry3<f64>, shape: impl Shape<f64>, material: Material) -> Object {
+        Object {
+            isometry,
+            shape: Box::new(shape),
+            material,
         }
     }
 
-    fn surface_normal(&self, hit_point: &Point3<f64>) -> Vector3<f64> {
-        match self {
-            Object::Sphere(sphere) => sphere.surface_normal(hit_point),
-            Object::Plane(plane) => plane.surface_normal(hit_point),
-        }
-    }
-
-    fn texture_coords(&self, hit_point: &Point3<f64>) -> TextureCoords {
-        match self {
-            Object::Sphere(sphere) => sphere.texture_coords(hit_point),
-            Object::Plane(plane) => plane.texture_coords(hit_point),
-        }
+    pub fn intersect(&self, ray: &Ray<f64>) -> Option<RayIntersection<f64>> {
+        self.shape
+            .toi_and_normal_with_ray(&self.isometry, ray, false)
     }
 }

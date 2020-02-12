@@ -1,11 +1,11 @@
-use crate::intersection::{Intersectable, Intersection};
+use crate::color::Color;
 use crate::light::Light;
-use crate::object::material::{Color, SurfaceType};
+use crate::material::SurfaceType;
 use crate::object::Object;
-use crate::ray::Ray;
-use crate::{PIXEL_HEIGHT, PIXEL_WIDTH};
+use crate::{ray, PIXEL_HEIGHT, PIXEL_WIDTH};
 use image::{ImageBuffer, RgbaImage};
 use nalgebra::{Perspective3, Point3, Vector3};
+use ncollide3d::query::{Ray, RayIntersection};
 use rayon::prelude::*;
 use std::f64::consts::PI;
 
@@ -26,7 +26,7 @@ impl Scene {
             .flat_map(|y| {
                 (0..PIXEL_WIDTH)
                     .flat_map(|x| {
-                        let ray = Ray::create_prime(x, y, &self.perspective);
+                        let ray = ray::create_prime(x, y, &self.perspective);
                         self.cast_ray(&ray, self.max_recursion_depth)
                             .to_u8()
                             .to_vec()
@@ -38,25 +38,30 @@ impl Scene {
         ImageBuffer::from_vec(PIXEL_WIDTH, PIXEL_HEIGHT, pixels).unwrap()
     }
 
-    fn get_color(&self, ray: &Ray, intersection: &Intersection, depth: u32) -> Color {
-        let hit_point = &ray.origin + &ray.direction * intersection.distance;
-        let surface_normal = intersection.object.surface_normal(&hit_point);
+    fn get_color(
+        &self,
+        ray: &Ray<f64>,
+        object: &Object,
+        intersection: &RayIntersection<f64>,
+        depth: u32,
+    ) -> Color {
+        let hit_point = ray.point_at(intersection.toi);
 
         self.lights
             .iter()
-            .map(|light| match intersection.object.material().surface {
+            .map(|light| match object.material.surface {
                 SurfaceType::Diffuse => {
-                    self.shade_diffuse(&intersection, light, &hit_point, &surface_normal)
+                    self.shade_diffuse(object, light, &hit_point, &intersection.normal)
                 }
                 SurfaceType::Reflective { reflectivity } => {
-                    let reflection_ray = Ray::create_reflection(
-                        surface_normal,
-                        ray.direction,
+                    let reflection_ray = ray::create_reflection(
+                        intersection.normal,
+                        ray.dir,
                         hit_point,
                         SHADOW_BIAS,
                     );
                     let mut color =
-                        self.shade_diffuse(&intersection, light, &hit_point, &surface_normal);
+                        self.shade_diffuse(object, light, &hit_point, &intersection.normal);
                     color = color * (1.0 - reflectivity);
                     color + self.cast_ray(&reflection_ray, depth - 1) * reflectivity
                 }
@@ -65,17 +70,14 @@ impl Scene {
                     index,
                 } => {
                     let mut refraction_color = Color([0.0; 3]);
-                    let kr = Self::fresnel(ray.direction, surface_normal, index);
-                    let surface_color = intersection
-                        .object
-                        .material()
-                        .color
-                        .color_at(&intersection.object.texture_coords(&hit_point));
+                    let kr = Self::fresnel(ray.dir, intersection.normal, index);
+                    let surface_color = object.material.color;
+                    //.color_at(&intersection.object.texture_coords(&hit_point));
 
                     if kr < 1.0 {
-                        let transmission_ray = Ray::create_transmission(
-                            surface_normal,
-                            ray.direction,
+                        let transmission_ray = ray::create_transmission(
+                            intersection.normal,
+                            ray.dir,
                             hit_point,
                             SHADOW_BIAS,
                             index,
@@ -85,9 +87,9 @@ impl Scene {
                         refraction_color = self.cast_ray(&transmission_ray, depth - 1);
                     }
 
-                    let reflection_ray = Ray::create_reflection(
-                        surface_normal,
-                        ray.direction,
+                    let reflection_ray = ray::create_reflection(
+                        intersection.normal,
+                        ray.dir,
                         hit_point,
                         SHADOW_BIAS,
                     );
@@ -102,39 +104,30 @@ impl Scene {
 
     fn shade_diffuse(
         &self,
-        intersection: &Intersection,
+        object: &Object,
         light: &Light,
         hit_point: &Point3<f64>,
         surface_normal: &Vector3<f64>,
     ) -> Color {
         let direction_to_light = light.direction_to_light(&hit_point);
-        let shadow_ray = Ray {
-            origin: hit_point + surface_normal * SHADOW_BIAS,
-            direction: direction_to_light,
-        };
+        let shadow_ray = Ray::new(hit_point + surface_normal * SHADOW_BIAS, direction_to_light);
 
-        let shadow_ray_intersection = self.trace(&shadow_ray);
-
-        let is_in_light = shadow_ray_intersection.is_none()
-            || shadow_ray_intersection.unwrap().distance > light.distance_to(&hit_point);
-
-        let light_intensity = if is_in_light {
-            light.intensity(&hit_point)
-        } else {
-            0.0
-        };
+        let light_intensity = self
+            .trace(&shadow_ray)
+            .map(|(_, intersection)| intersection.toi > light.distance_to(&hit_point)) // is hitted object behind light
+            .unwrap_or(true)
+            .then(|| light.intensity(&hit_point))
+            .unwrap_or(0.0);
 
         let light_power = surface_normal.dot(&direction_to_light).max(0.0) * light_intensity;
-        let light_reflected = intersection.object.material().albedo / PI;
+        let light_reflected = object.material.albedo / PI;
 
-        intersection
-            .object
-            .material()
-            .color
-            .color_at(&intersection.object.texture_coords(&hit_point))
+        object
+            .material.color
+            //.color_at(&intersection.object.texture_coords(&hit_point))
             * light.color()
-            * light_power
-            * light_reflected
+        * light_power
+        * light_reflected
     }
 
     fn fresnel(incident: Vector3<f64>, normal: Vector3<f64>, index: f64) -> f64 {
@@ -159,24 +152,24 @@ impl Scene {
         }
     }
 
-    pub fn trace(&self, ray: &Ray) -> Option<Intersection> {
+    fn trace(&self, ray: &Ray<f64>) -> Option<(&Object, RayIntersection<f64>)> {
         self.objects
             .iter()
             .filter_map(|object| {
                 object
                     .intersect(ray)
-                    .map(|distance| Intersection::new(distance, object))
+                    .map(|intersection| (object, intersection))
             })
-            .min_by(|a, b| a.distance.partial_cmp(&b.distance).unwrap())
+            .min_by(|(_, a), (_, b)| a.toi.partial_cmp(&b.toi).unwrap())
     }
 
-    pub fn cast_ray(&self, ray: &Ray, depth: u32) -> Color {
+    pub fn cast_ray(&self, ray: &Ray<f64>, depth: u32) -> Color {
         if depth == 0 {
             return Color([0.0; 3]);
         }
 
         self.trace(ray)
-            .map(|intersection| self.get_color(ray, &intersection, depth))
+            .map(|(object, intersection)| self.get_color(ray, &object, &intersection, depth))
             .unwrap_or(Color([0.0; 3]))
     }
 }
