@@ -3,7 +3,7 @@ use std::ops::{Add, Mul};
 #[derive(Clone, Copy)]
 pub struct Color(pub [f64; 3]);
 
-const GAMMA: f64 = 1.2;
+const GAMMA: f64 = 2.2;
 
 impl Color {
     pub fn to_u8(&self) -> [u8; 4] {
