@@ -45,43 +45,38 @@ fn main() {
         max_recursion_depth: 5,
         lights: vec![
             Light::Directional(DirectionalLight {
-                direction: Vector3::new(1.0, -1.0, 0.0).normalize(),
+                direction: Vector3::new(0.0, -1.0, 0.0).normalize(),
                 color: [1.0; 3].into(),
                 intensity: 5.0,
             }),
             Light::Spherical(SphericalLight {
-                position: Point3::new(-2.5, 1.0, -2.0),
+                position: Point3::new(0.0, 1.75, -4.0),
                 color: [1.0; 3].into(),
-                intensity: 120.0,
-            }),
-            Light::Spherical(SphericalLight {
-                position: Point3::new(5.0, 3.0, -6.0),
-                color: [1.0; 3].into(),
-                intensity: 200.0,
+                intensity: 300.0,
             }),
         ],
         objects: vec![
             ObjectBuilder::new(shape::Ball::new(1.0))
-                .position(-1.0, 1.5, -3.0)
+                .position(-2.5, 1.5, -4.0)
                 .color([1.0, 0.0, 0.0].into())
                 .build(),
-            ObjectBuilder::new(shape::Ball::new(1.0))
+            ObjectBuilder::new(shape::Ball::new(1.5))
                 .position(4.0, 0.0, -5.0)
                 .color([1.0, 1.0, 1.0].into())
                 .surface(SurfaceType::Refractive {
-                    transparency: 0.4,
+                    transparency: 0.9,
                     index: 2.0,
                 })
                 .build(),
-            ObjectBuilder::new(shape::Ball::new(1.0))
+            ObjectBuilder::new(shape::Ball::new(0.5))
                 .position(0.0, 0.0, -4.3)
                 .color([1.0, 1.0, 0.0].into())
                 .surface(SurfaceType::Reflective { reflectivity: 0.4 })
                 .build(),
-            ObjectBuilder::new(shape::Cuboid::new(Vector3::new(14.0, 6.5, 10.0)))
-                .position(0.0, 1.75, -10.0)
+            ObjectBuilder::new(shape::Cuboid::new(Vector3::new(7.0, 3.25, 5.0)))
+                .position(0.0, 1.75, -4.0)
                 .surface(SurfaceType::Reflective { reflectivity: 0.1 })
-                .color([0.1, 0.8, 0.1].into())
+                .color([1.0, 1.0, 1.0].into())
                 .build(),
         ],
     };
