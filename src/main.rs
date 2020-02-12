@@ -12,7 +12,7 @@ use crate::object::Object;
 use crate::scene::Scene;
 use glutin_window::GlutinWindow as Window;
 use image::{DynamicImage, ImageBuffer, Rgb};
-use nalgebra::{Point3, Vector3};
+use nalgebra::{Perspective3, Point3, Vector3};
 use opengl_graphics::{GlGraphics, OpenGL, Texture, TextureSettings};
 use piston::event_loop::{EventLoop, EventSettings, Events};
 use piston::input::RenderEvent;
@@ -34,7 +34,12 @@ fn main() {
     let mut gl = GlGraphics::new(opengl);
 
     let scene = Scene {
-        fov: 90.0,
+        perspective: Perspective3::new(
+            PIXEL_WIDTH as f64 / PIXEL_HEIGHT as f64,
+            90.0_f64.to_radians(),
+            1.0,
+            1000.0,
+        ),
         max_recursion_depth: 5,
         lights: vec![
             Light::Directional(DirectionalLight {

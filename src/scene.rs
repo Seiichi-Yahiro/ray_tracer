@@ -5,14 +5,14 @@ use crate::object::Object;
 use crate::ray::Ray;
 use crate::{PIXEL_HEIGHT, PIXEL_WIDTH};
 use image::{ImageBuffer, RgbaImage};
-use nalgebra::{Point3, Vector3};
+use nalgebra::{Perspective3, Point3, Vector3};
 use rayon::prelude::*;
 use std::f64::consts::PI;
 
 const SHADOW_BIAS: f64 = 1e-13;
 
 pub struct Scene {
-    pub fov: f64,
+    pub perspective: Perspective3<f64>,
     pub objects: Vec<Object>,
     pub lights: Vec<Light>,
 
@@ -26,7 +26,7 @@ impl Scene {
             .flat_map(|y| {
                 (0..PIXEL_WIDTH)
                     .flat_map(|x| {
-                        let ray = Ray::create_prime(x, y, &self);
+                        let ray = Ray::create_prime(x, y, &self.perspective);
                         self.cast_ray(&ray, self.max_recursion_depth)
                             .to_u8()
                             .to_vec()

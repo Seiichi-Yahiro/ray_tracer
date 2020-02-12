@@ -1,6 +1,5 @@
-use crate::scene::Scene;
 use crate::{PIXEL_HEIGHT, PIXEL_WIDTH};
-use nalgebra::{Point3, Vector3};
+use nalgebra::{Perspective3, Point3, Vector3};
 
 pub struct Ray {
     pub origin: Point3<f64>,
@@ -8,20 +7,21 @@ pub struct Ray {
 }
 
 impl Ray {
-    pub fn create_prime(x: u32, y: u32, scene: &Scene) -> Ray {
-        let fov_adjustment = (scene.fov.to_radians() / 2.0).tan();
-        const ASPECT_RATIO: f64 = PIXEL_WIDTH as f64 / PIXEL_HEIGHT as f64;
+    pub fn create_prime(x: u32, y: u32, perspective: &Perspective3<f64>) -> Ray {
         const SIZE: f64 = 2.0;
         const NORMALIZED_WIDTH: f64 = SIZE / PIXEL_WIDTH as f64;
         const NORMALIZED_HEIGHT: f64 = SIZE / PIXEL_HEIGHT as f64;
 
-        let sensor_x = (NORMALIZED_WIDTH * (x as f64 + 0.5) - 1.0) * ASPECT_RATIO * fov_adjustment;
-        let sensor_y = (1.0 - NORMALIZED_HEIGHT * (y as f64 + 0.5)) * fov_adjustment;
+        let normalized_x = NORMALIZED_WIDTH * (x as f64 + 0.5) - 1.0;
+        let normalized_y = 1.0 - NORMALIZED_HEIGHT * (y as f64 + 0.5);
 
-        Ray {
-            origin: Point3::new(0.0, 0.0, 0.0),
-            direction: Vector3::new(sensor_x, sensor_y, -1.0).normalize(),
-        }
+        let near_point = Point3::new(normalized_x, normalized_y, -1.0);
+        let far_point = Point3::new(normalized_x, normalized_y, 1.0);
+
+        let origin = perspective.unproject_point(&near_point);
+        let direction = (perspective.unproject_point(&far_point) - &origin).normalize();
+
+        Ray { origin, direction }
     }
 
     pub fn create_reflection(
