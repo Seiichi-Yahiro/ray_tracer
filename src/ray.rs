@@ -1,4 +1,5 @@
 use crate::scene::Scene;
+use crate::{PIXEL_HEIGHT, PIXEL_WIDTH};
 use nalgebra::{Point3, Vector3};
 
 pub struct Ray {
@@ -9,20 +10,13 @@ pub struct Ray {
 impl Ray {
     pub fn create_prime(x: u32, y: u32, scene: &Scene) -> Ray {
         let fov_adjustment = (scene.fov.to_radians() / 2.0).tan();
-        let aspect_ratio = scene.width as f64 / scene.height as f64;
+        const ASPECT_RATIO: f64 = PIXEL_WIDTH as f64 / PIXEL_HEIGHT as f64;
+        const SIZE: f64 = 2.0;
+        const NORMALIZED_WIDTH: f64 = SIZE / PIXEL_WIDTH as f64;
+        const NORMALIZED_HEIGHT: f64 = SIZE / PIXEL_HEIGHT as f64;
 
-        let sensor_x = {
-            let pixel_center = x as f64 + 0.5;
-            let normalized_to_width = pixel_center / scene.width as f64;
-            normalized_to_width * 2.0 - 1.0
-        } * aspect_ratio
-            * fov_adjustment;
-
-        let sensor_y = {
-            let pixel_center = y as f64 + 0.5;
-            let normalized_to_height = pixel_center / scene.height as f64;
-            1.0 - normalized_to_height * 2.0
-        } * fov_adjustment;
+        let sensor_x = (NORMALIZED_WIDTH * (x as f64 + 0.5) - 1.0) * ASPECT_RATIO * fov_adjustment;
+        let sensor_y = (1.0 - NORMALIZED_HEIGHT * (y as f64 + 0.5)) * fov_adjustment;
 
         Ray {
             origin: Point3::new(0.0, 0.0, 0.0),

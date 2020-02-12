@@ -3,6 +3,7 @@ use crate::light::Light;
 use crate::object::material::{Color, SurfaceType};
 use crate::object::Object;
 use crate::ray::Ray;
+use crate::{PIXEL_HEIGHT, PIXEL_WIDTH};
 use image::{ImageBuffer, RgbaImage};
 use nalgebra::{Point3, Vector3};
 use rayon::prelude::*;
@@ -11,8 +12,6 @@ use std::f64::consts::PI;
 const SHADOW_BIAS: f64 = 1e-13;
 
 pub struct Scene {
-    pub width: u32,
-    pub height: u32,
     pub fov: f64,
     pub objects: Vec<Object>,
     pub lights: Vec<Light>,
@@ -22,10 +21,10 @@ pub struct Scene {
 
 impl Scene {
     pub fn create_image(&self) -> RgbaImage {
-        let pixels = (0..self.height)
+        let pixels = (0..PIXEL_HEIGHT)
             .into_par_iter()
             .flat_map(|y| {
-                (0..self.width)
+                (0..PIXEL_WIDTH)
                     .flat_map(|x| {
                         let ray = Ray::create_prime(x, y, &self);
                         self.cast_ray(&ray, self.max_recursion_depth)
@@ -36,7 +35,7 @@ impl Scene {
             })
             .collect::<Vec<u8>>();
 
-        ImageBuffer::from_vec(self.width, self.height, pixels).unwrap()
+        ImageBuffer::from_vec(PIXEL_WIDTH, PIXEL_HEIGHT, pixels).unwrap()
     }
 
     fn get_color(&self, ray: &Ray, intersection: &Intersection, depth: u32) -> Color {

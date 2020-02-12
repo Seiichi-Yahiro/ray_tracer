@@ -18,11 +18,13 @@ use piston::event_loop::{EventLoop, EventSettings, Events};
 use piston::input::RenderEvent;
 use piston::window::WindowSettings;
 
+pub const PIXEL_WIDTH: u32 = 800;
+pub const PIXEL_HEIGHT: u32 = 600;
+
 fn main() {
     let opengl = OpenGL::V4_5;
-    let (pixel_width, pixel_height) = (800, 600);
 
-    let mut window: Window = WindowSettings::new("Ray Tracer", [pixel_width, pixel_height])
+    let mut window: Window = WindowSettings::new("Ray Tracer", [PIXEL_WIDTH, PIXEL_HEIGHT])
         .graphics_api(opengl)
         .exit_on_esc(true)
         .build()
@@ -32,8 +34,6 @@ fn main() {
     let mut gl = GlGraphics::new(opengl);
 
     let scene = Scene {
-        width: pixel_width,
-        height: pixel_height,
         fov: 90.0,
         max_recursion_depth: 5,
         lights: vec![
