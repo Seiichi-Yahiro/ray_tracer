@@ -27,7 +27,7 @@ pub fn create_reflection(
 ) -> Ray<f64> {
     Ray::new(
         intersection + normal * bias,
-        incident - 2.0 * incident.dot(&normal) * &normal,
+        (incident - 2.0 * incident.dot(&normal) * &normal).normalize(),
     )
 }
 
@@ -41,7 +41,7 @@ pub fn create_transmission(
     let mut ref_n = normal.clone();
     let mut eta_t = index as f64;
     let mut eta_i = 1.0f64;
-    let mut i_dot_n = incident.dot(&normal);
+    let mut i_dot_n = incident.dot(&normal).clamp(-1.0, 1.0);
     if i_dot_n < 0.0 {
         //Outside the surface
         i_dot_n = -i_dot_n;
@@ -59,7 +59,7 @@ pub fn create_transmission(
     } else {
         Some(Ray::new(
             intersection + (&ref_n * -bias),
-            (incident + i_dot_n * &ref_n) * eta - &ref_n * k.sqrt(),
+            (eta * incident + (eta * i_dot_n - k.sqrt()) * ref_n).normalize(),
         ))
     }
 }

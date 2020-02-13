@@ -82,7 +82,8 @@ impl Scene {
                     ray::create_reflection(intersection.normal, ray.dir, hit_point, SHADOW_BIAS);
                 let reflection_color = self.cast_ray(&reflection_ray, depth - 1);
 
-                (reflection_color * kr + refraction_color * (1.0 - kr) * transparency) * surface_color
+                (reflection_color * kr + refraction_color * (1.0 - kr) * transparency)
+                    * surface_color
             }
         }
     }
@@ -122,7 +123,7 @@ impl Scene {
     }
 
     fn fresnel(incident: Vector3<f64>, normal: Vector3<f64>, index: f64) -> f64 {
-        let i_dot_n = incident.dot(&normal);
+        let i_dot_n = incident.dot(&normal).clamp(-1.0, 1.0);
         let mut eta_i = 1.0;
         let mut eta_t = index;
         if i_dot_n > 0.0 {
@@ -131,12 +132,12 @@ impl Scene {
         }
 
         let sin_t = eta_i / eta_t * (1.0 - i_dot_n * i_dot_n).max(0.0).sqrt();
-        if sin_t > 1.0 {
+        if sin_t >= 1.0 {
             //Total internal reflection
             1.0
         } else {
             let cos_t = (1.0 - sin_t * sin_t).max(0.0).sqrt();
-            let cos_i = cos_t.abs();
+            let cos_i = i_dot_n.abs();
             let r_s = ((eta_t * cos_i) - (eta_i * cos_t)) / ((eta_t * cos_i) + (eta_i * cos_t));
             let r_p = ((eta_i * cos_i) - (eta_t * cos_t)) / ((eta_i * cos_i) + (eta_t * cos_t));
             (r_s * r_s + r_p * r_p) / 2.0
