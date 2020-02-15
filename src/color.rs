@@ -1,4 +1,5 @@
-use std::ops::{Add, Mul};
+use std::iter::Sum;
+use std::ops::{Add, Div, Mul};
 
 #[derive(Clone, Copy)]
 pub struct Color(pub [f64; 3]);
@@ -54,5 +55,20 @@ impl Mul<f64> for Color {
     fn mul(self, rhs: f64) -> Self::Output {
         let [r, g, b] = self.0;
         Color([r * rhs, g * rhs, b * rhs])
+    }
+}
+
+impl Div<f64> for Color {
+    type Output = Color;
+
+    fn div(self, rhs: f64) -> Self::Output {
+        let [r, g, b] = self.0;
+        Color([r / rhs, g / rhs, b / rhs])
+    }
+}
+
+impl Sum for Color {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(Color([0.0; 3]), |acc, color| acc + color)
     }
 }

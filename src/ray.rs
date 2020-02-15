@@ -7,8 +7,8 @@ pub fn create_prime(x: u32, y: u32, perspective: &Perspective3<f64>) -> Ray<f64>
     const NORMALIZED_WIDTH: f64 = SIZE / PIXEL_WIDTH as f64;
     const NORMALIZED_HEIGHT: f64 = SIZE / PIXEL_HEIGHT as f64;
 
-    let normalized_x = NORMALIZED_WIDTH * (x as f64 + 0.5) - 1.0;
-    let normalized_y = 1.0 - NORMALIZED_HEIGHT * (y as f64 + 0.5);
+    let normalized_x = NORMALIZED_WIDTH * (x as f64 + rand::random::<f64>()) - 1.0;
+    let normalized_y = 1.0 - NORMALIZED_HEIGHT * (y as f64 + rand::random::<f64>());
 
     let near_point = Point3::new(normalized_x, normalized_y, -1.0);
     let far_point = Point3::new(normalized_x, normalized_y, 1.0);

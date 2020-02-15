@@ -17,6 +17,7 @@ pub struct Scene {
     pub lights: Vec<Light>,
 
     pub max_recursion_depth: u32,
+    pub anti_aliasing_loops: u32,
 }
 
 impl Scene {
@@ -26,8 +27,13 @@ impl Scene {
             .flat_map(|y| {
                 (0..PIXEL_WIDTH)
                     .flat_map(|x| {
-                        let ray = ray::create_prime(x, y, &self.perspective);
-                        self.cast_ray(&ray, self.max_recursion_depth)
+                        ((0..self.anti_aliasing_loops)
+                            .map(|_| {
+                                let ray = ray::create_prime(x, y, &self.perspective);
+                                self.cast_ray(&ray, self.max_recursion_depth)
+                            })
+                            .sum::<Color>()
+                            / self.anti_aliasing_loops as f64)
                             .to_u8()
                             .to_vec()
                     })
@@ -119,7 +125,7 @@ impl Scene {
                     * light_power
                     * light_reflected
             })
-            .fold(Color([0.0, 0.0, 0.0]), |acc_color, color| acc_color + color)
+            .sum()
     }
 
     fn fresnel(incident: Vector3<f64>, normal: Vector3<f64>, index: f64) -> f64 {

@@ -45,6 +45,7 @@ fn main() {
             1000.0,
         ),
         max_recursion_depth: 5,
+        anti_aliasing_loops: 20,
         lights: vec![
             Light::Directional(DirectionalLight {
                 direction: Vector3::new(0.0, -1.0, 0.0).normalize(),
