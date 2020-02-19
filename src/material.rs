@@ -8,7 +8,7 @@ pub struct Material {
 
 pub enum SurfaceType {
     Diffuse,
-    Reflective { reflectivity: f64 },
+    Reflective { reflectivity: f64, fuzz: f64 },
     Refractive { index: f64, transparency: f64 },
 }
 
