@@ -61,11 +61,11 @@ fn main() {
         objects: vec![
             ObjectBuilder::new(shape::Ball::new(1.0))
                 .position(-2.5, -0.5, -4.0)
-                .color([1.0, 0.0, 0.0].into())
+                .color([1.0, 0.0, 0.0])
                 .build(),
             ObjectBuilder::new(shape::Ball::new(1.5))
                 .position(2.0, 0.0, -5.0)
-                .color([1.0, 1.0, 1.0].into())
+                .color([1.0, 1.0, 1.0])
                 .surface(SurfaceType::Refractive {
                     transparency: 0.9,
                     index: 2.0,
@@ -73,38 +73,38 @@ fn main() {
                 .build(),
             ObjectBuilder::new(shape::Ball::new(0.5))
                 .position(0.0, -1.0, -4.3)
-                .color([1.0, 1.0, 0.0].into())
+                .color([1.0, 1.0, 0.0])
                 .surface(SurfaceType::Reflective { reflectivity: 0.4, fuzz: 0.3 })
                 .build(),
             ObjectBuilder::new(shape::Plane::new(-Vector3::y_axis()))
                 .position(0.0, -1.5, 0.0)
                 .surface(SurfaceType::Reflective { reflectivity: 0.1, fuzz: 0.05 })
-                .color([0.73, 0.73, 0.73].into())
+                .color([0.73, 0.73, 0.73])
                 .build(),
             ObjectBuilder::new(shape::Plane::new(Vector3::y_axis()))
                 .position(0.0, 4.0, 0.0)
                 .surface(SurfaceType::Reflective { reflectivity: 0.1, fuzz: 0.05 })
-                .color([0.73, 0.73, 0.73].into())
+                .color([0.73, 0.73, 0.73])
                 .build(),
             ObjectBuilder::new(shape::Plane::new(-Vector3::x_axis()))
                 .position(-4.0, 0.0, 0.0)
                 .surface(SurfaceType::Reflective { reflectivity: 0.1, fuzz: 0.05 })
-                .color([0.65, 0.05, 0.05].into())
+                .color([0.65, 0.05, 0.05])
                 .build(),
             ObjectBuilder::new(shape::Plane::new(Vector3::x_axis()))
                 .position(4.0, 0.0, 0.0)
                 .surface(SurfaceType::Reflective { reflectivity: 0.1, fuzz: 0.05 })
-                .color([0.12, 0.45, 0.15].into())
+                .color([0.12, 0.45, 0.15])
                 .build(),
             ObjectBuilder::new(shape::Plane::new(-Vector3::z_axis()))
                 .position(0.0, 0.0, -7.0)
                 .surface(SurfaceType::Reflective { reflectivity: 0.1, fuzz: 0.05 })
-                .color([0.73, 0.73, 0.73].into())
+                .color([0.73, 0.73, 0.73])
                 .build(),
             ObjectBuilder::new(shape::Plane::new(Vector3::z_axis()))
                 .position(0.0, 0.0, 1.0)
                 .surface(SurfaceType::Reflective { reflectivity: 0.1, fuzz: 0.05 })
-                .color([0.73, 0.73, 0.73].into())
+                .color([0.73, 0.73, 0.73])
                 .build(),
         ],
     };

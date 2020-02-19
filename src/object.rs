@@ -62,8 +62,8 @@ impl<S: Shape<f64>> ObjectBuilder<S> {
         self
     }
 
-    pub fn color(mut self, value: Color) -> Self {
-        self.color = value;
+    pub fn color(mut self, value: impl Into<Color>) -> Self {
+        self.color = value.into();
         self
     }
 
