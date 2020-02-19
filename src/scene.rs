@@ -130,7 +130,6 @@ impl Scene {
             .map(|light| {
                 let direction_to_light = light.direction_to_light(&hit_point);
                 let shadow_ray = Ray::new(origin, direction_to_light);
-
                 let light_intensity = self
                     .trace(&shadow_ray)
                     .map(|(_, intersection)| intersection.toi > light.distance_to(&hit_point)) // is hitted object behind light
@@ -141,8 +140,7 @@ impl Scene {
                 let light_power =
                     surface_normal.dot(&direction_to_light).max(0.0) * light_intensity;
 
-                object
-                    .material.color
+                object.material.color
                     //.color_at(&intersection.object.texture_coords(&hit_point))
                     * light.color()
                     * light_power

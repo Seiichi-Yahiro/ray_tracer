@@ -23,7 +23,10 @@ impl Light {
     pub fn direction_to_light(&self, hit_point: &Point3<f64>) -> Vector3<f64> {
         match self {
             Light::Directional(directional) => -directional.direction.clone(),
-            Light::Spherical(spherical) => (&spherical.position - hit_point).normalize(),
+            Light::Spherical(spherical) => {
+                ((&spherical.position + Vector3::new_random().normalize() * 0.2) - hit_point)
+                    .normalize()
+            }
         }
     }
 

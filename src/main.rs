@@ -122,7 +122,7 @@ fn main() {
 
     let texture_settings = TextureSettings::new();
     let image = scene.create_image();
-    image.save("image.png");
+    image.save("image.png").unwrap();
     let texture = Texture::from_image(&image, &texture_settings);
 
     while let Some(event) = events.next(&mut window) {
