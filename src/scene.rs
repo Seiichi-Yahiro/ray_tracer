@@ -130,21 +130,26 @@ impl Scene {
             .map(|light| {
                 let direction_to_light = light.direction_to_light(&hit_point);
                 let shadow_ray = Ray::new(origin, direction_to_light);
-                let light_intensity = self
+                let light_color = self
                     .trace(&shadow_ray)
-                    .map(|(_, intersection)| intersection.toi > light.distance_to(&hit_point)) // is hitted object behind light
-                    .unwrap_or(true)
-                    .then(|| light.intensity(&hit_point))
-                    .unwrap_or(0.0);
+                    .map(|(object, intersection)| {
+                        if let SurfaceType::Refractive { .. } = object.material.surface {
+                            self.cast_ray(&shadow_ray, depth - 1)
+                        } else if intersection.toi > light.distance_to(&hit_point) {
+                            light.color() * light.intensity(&hit_point) // is hitted object behind light
+                        } else {
+                            [0.0; 3].into()
+                        }
+                    })
+                    .unwrap_or([0.0; 3].into());
 
-                let light_power =
-                    surface_normal.dot(&direction_to_light).max(0.0) * light_intensity;
+                let light_power = surface_normal.dot(&direction_to_light).max(0.0);
 
                 object.material.color
-                    //.color_at(&intersection.object.texture_coords(&hit_point))
-                    * light.color()
-                    * light_power
-                    * light_reflected
+                        //.color_at(&intersection.object.texture_coords(&hit_point))
+                        * light_color
+                        * light_power
+                        * light_reflected
             })
             .sum::<Color>()
             + scatter_color
