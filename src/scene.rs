@@ -59,8 +59,12 @@ impl Scene {
                 self.shade_diffuse(object, &hit_point, &intersection.normal, depth)
             }
             SurfaceType::Reflective { reflectivity, fuzz } => {
-                let reflection_ray =
-                    ray::create_reflection(intersection.normal, ray.dir + fuzz * Vector3::new_random().normalize(), hit_point, SHADOW_BIAS);
+                let reflection_ray = ray::create_reflection(
+                    intersection.normal,
+                    ray.dir + fuzz * Vector3::new_random().normalize(),
+                    hit_point,
+                    SHADOW_BIAS,
+                );
                 let mut color = self.shade_diffuse(object, &hit_point, &intersection.normal, depth);
                 color = color * (1.0 - reflectivity);
                 color + self.cast_ray(&reflection_ray, depth - 1) * reflectivity
@@ -91,7 +95,8 @@ impl Scene {
                     ray::create_reflection(intersection.normal, ray.dir, hit_point, SHADOW_BIAS);
                 let reflection_color = self.cast_ray(&reflection_ray, depth - 1);
 
-                (reflection_color * kr + refraction_color * (1.0 - kr) * transparency)
+                (reflection_color * kr + refraction_color * (1.0 - kr))
+                    * transparency
                     * surface_color
             }
         }

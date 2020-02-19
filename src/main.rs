@@ -45,7 +45,7 @@ fn main() {
             1000.0,
         ),
         max_recursion_depth: 5,
-        max_rays: 100,
+        max_rays: 20,
         lights: vec![
             /*Light::Directional(DirectionalLight {
                 direction: Vector3::new(0.0, -1.0, 0.0).normalize(),
@@ -68,42 +68,53 @@ fn main() {
                 .color([1.0, 1.0, 1.0])
                 .surface(SurfaceType::Refractive {
                     transparency: 0.9,
-                    index: 2.0,
+                    index: 1.5,
                 })
                 .build(),
             ObjectBuilder::new(shape::Ball::new(0.5))
                 .position(0.0, -1.0, -4.3)
                 .color([1.0, 1.0, 0.0])
-                .surface(SurfaceType::Reflective { reflectivity: 0.4, fuzz: 0.3 })
+                .surface(SurfaceType::Reflective {
+                    reflectivity: 0.4,
+                    fuzz: 0.3,
+                })
+                .build(),
+            ObjectBuilder::new(shape::Cuboid::new(Vector3::new(0.5, 1.5, 0.1)))
+                .position(-1.5, -1.4, -3.0)
+                .rotation(*Vector3::y_axis(), 20.0)
+                .surface(SurfaceType::Refractive {
+                    transparency: 0.9,
+                    index: 1.5,
+                })
                 .build(),
             ObjectBuilder::new(shape::Plane::new(-Vector3::y_axis()))
                 .position(0.0, -1.5, 0.0)
-                .surface(SurfaceType::Reflective { reflectivity: 0.1, fuzz: 0.05 })
-                .color([0.73, 0.73, 0.73])
+                .surface(SurfaceType::Diffuse)
+                .color([0.73, 0.1, 0.73])
                 .build(),
             ObjectBuilder::new(shape::Plane::new(Vector3::y_axis()))
                 .position(0.0, 4.0, 0.0)
-                .surface(SurfaceType::Reflective { reflectivity: 0.1, fuzz: 0.05 })
-                .color([0.73, 0.73, 0.73])
+                .surface(SurfaceType::Diffuse)
+                .color([0.1, 0.73, 0.73])
                 .build(),
             ObjectBuilder::new(shape::Plane::new(-Vector3::x_axis()))
                 .position(-4.0, 0.0, 0.0)
-                .surface(SurfaceType::Reflective { reflectivity: 0.1, fuzz: 0.05 })
+                .surface(SurfaceType::Diffuse)
                 .color([0.65, 0.05, 0.05])
                 .build(),
             ObjectBuilder::new(shape::Plane::new(Vector3::x_axis()))
                 .position(4.0, 0.0, 0.0)
-                .surface(SurfaceType::Reflective { reflectivity: 0.1, fuzz: 0.05 })
+                .surface(SurfaceType::Diffuse)
                 .color([0.12, 0.45, 0.15])
                 .build(),
             ObjectBuilder::new(shape::Plane::new(-Vector3::z_axis()))
                 .position(0.0, 0.0, -7.0)
-                .surface(SurfaceType::Reflective { reflectivity: 0.1, fuzz: 0.05 })
-                .color([0.73, 0.73, 0.73])
+                .surface(SurfaceType::Diffuse)
+                .color([0.1, 0.1, 0.73])
                 .build(),
             ObjectBuilder::new(shape::Plane::new(Vector3::z_axis()))
                 .position(0.0, 0.0, 1.0)
-                .surface(SurfaceType::Reflective { reflectivity: 0.1, fuzz: 0.05 })
+                .surface(SurfaceType::Diffuse)
                 .color([0.73, 0.73, 0.73])
                 .build(),
         ],
