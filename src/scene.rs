@@ -17,23 +17,24 @@ pub struct Scene {
     pub lights: Vec<Light>,
 
     pub max_recursion_depth: u32,
-    pub anti_aliasing_loops: u32,
+    pub max_rays: u32,
 }
 
 impl Scene {
     pub fn create_image(&self) -> RgbaImage {
+        let number_of_rays = self.max_rays as f64 * (1.0 + self.lights.len() as f64);
         let pixels = (0..PIXEL_HEIGHT)
             .into_par_iter()
             .flat_map(|y| {
                 (0..PIXEL_WIDTH)
                     .flat_map(|x| {
-                        ((0..self.anti_aliasing_loops)
+                        ((0..self.max_rays)
                             .map(|_| {
                                 let ray = ray::create_prime(x, y, &self.perspective);
                                 self.cast_ray(&ray, self.max_recursion_depth)
                             })
                             .sum::<Color>()
-                            / self.anti_aliasing_loops as f64)
+                            / number_of_rays)
                             .to_u8()
                             .to_vec()
                     })
@@ -54,11 +55,13 @@ impl Scene {
         let hit_point = ray.point_at(intersection.toi);
 
         match object.material.surface {
-            SurfaceType::Diffuse => self.shade_diffuse(object, &hit_point, &intersection.normal),
+            SurfaceType::Diffuse => {
+                self.shade_diffuse(object, &hit_point, &intersection.normal, depth)
+            }
             SurfaceType::Reflective { reflectivity } => {
                 let reflection_ray =
                     ray::create_reflection(intersection.normal, ray.dir, hit_point, SHADOW_BIAS);
-                let mut color = self.shade_diffuse(object, &hit_point, &intersection.normal);
+                let mut color = self.shade_diffuse(object, &hit_point, &intersection.normal, depth);
                 color = color * (1.0 - reflectivity);
                 color + self.cast_ray(&reflection_ray, depth - 1) * reflectivity
             }
@@ -99,13 +102,29 @@ impl Scene {
         object: &Object,
         hit_point: &Point3<f64>,
         surface_normal: &Vector3<f64>,
+        depth: u32,
     ) -> Color {
+        let origin = hit_point + surface_normal * SHADOW_BIAS;
+        let light_reflected = object.material.albedo / PI;
+
+        let scatter_color = {
+            let scatter_ray = Ray::new(
+                origin,
+                ((hit_point + surface_normal + Vector3::new_random().normalize()) - origin)
+                    .normalize(),
+            );
+
+            object.material.color
+                * self.cast_ray(&scatter_ray, depth - 1)
+                * surface_normal.dot(&scatter_ray.dir).max(0.0)
+                * light_reflected
+        };
+
         self.lights
             .iter()
             .map(|light| {
                 let direction_to_light = light.direction_to_light(&hit_point);
-                let shadow_ray =
-                    Ray::new(hit_point + surface_normal * SHADOW_BIAS, direction_to_light);
+                let shadow_ray = Ray::new(origin, direction_to_light);
 
                 let light_intensity = self
                     .trace(&shadow_ray)
@@ -116,7 +135,6 @@ impl Scene {
 
                 let light_power =
                     surface_normal.dot(&direction_to_light).max(0.0) * light_intensity;
-                let light_reflected = object.material.albedo / PI;
 
                 object
                     .material.color
@@ -125,7 +143,8 @@ impl Scene {
                     * light_power
                     * light_reflected
             })
-            .sum()
+            .sum::<Color>()
+            + scatter_color
     }
 
     fn fresnel(incident: Vector3<f64>, normal: Vector3<f64>, index: f64) -> f64 {
