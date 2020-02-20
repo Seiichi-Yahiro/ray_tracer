@@ -29,6 +29,13 @@ impl From<[f64; 3]> for Color {
     }
 }
 
+impl From<[u8; 3]> for Color {
+    fn from(color: [u8; 3]) -> Self {
+        let [r, g, b] = color;
+        Color::from([r as f64 / 255.0, g as f64 / 255.0, b as f64 / 255.0])
+    }
+}
+
 impl Add for Color {
     type Output = Color;
 
