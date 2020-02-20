@@ -134,7 +134,7 @@ impl Scene {
                     .trace(&shadow_ray)
                     .map(|(object, intersection)| {
                         if let SurfaceType::Refractive { .. } = object.material.surface {
-                            self.cast_ray(&shadow_ray, depth - 1)
+                            light.color() + self.cast_ray(&shadow_ray, depth - 1)
                         } else if intersection.toi > light.distance_to(&hit_point) {
                             light.color() * light.intensity(&hit_point) // is hitted object behind light
                         } else {
