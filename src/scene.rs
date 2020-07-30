@@ -138,10 +138,10 @@ impl Scene {
                         } else if intersection.toi > light.distance_to(&hit_point) {
                             light.color() * light.intensity(&hit_point) // is hitted object behind light
                         } else {
-                            [0.0; 3].into()
+                            [0.1; 3].into()
                         }
                     })
-                    .unwrap_or([0.0; 3].into());
+                    .unwrap_or([0.1; 3].into());
 
                 let light_power = surface_normal.dot(&direction_to_light).max(0.0);
 

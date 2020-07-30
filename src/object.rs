@@ -21,7 +21,7 @@ impl Object {
 
     pub fn intersect(&self, ray: &Ray<f64>) -> Option<RayIntersection<f64>> {
         self.shape
-            .toi_and_normal_with_ray(&self.isometry, ray, false)
+            .toi_and_normal_with_ray(&self.isometry, ray, 100.0, false)
     }
 }
 
